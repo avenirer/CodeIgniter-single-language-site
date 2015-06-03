@@ -361,18 +361,18 @@ class Rake extends Admin_Controller
             $now = date('Y-m-d H:i:s');
             foreach ($extracted_phrases as $key => $score)
             {
-                if ($this->phrase_model->where(array('phrase'=>$key,'language_slug'=>$language_slug))->get() === FALSE)
+                if ($this->phrase_model->where('phrase',$key)->get() === FALSE)
                 {
-                    $phrase_id = $this->phrase_model->insert(array('phrase'=>$key,'language_slug'=>$language_slug,'last_check'=>$now));
+                    $phrase_id = $this->phrase_model->insert(array('phrase'=>$key,'last_check'=>$now));
                 }
                 else
                 {
-                    $phrase = $this->phrase_model->where(array('phrase'=>$key,'language_slug'=>$language_slug))->get();
+                    $phrase = $this->phrase_model->where('phrase',$key)->get();
                     $phrase_id = $phrase->id;
                 }
-                $this->keyphrase_model->insert(array('content_id'=>$content_id,'phrase_id'=>$phrase_id,'language_slug'=>$language_slug,'score'=>$score));
+                $this->keyphrase_model->insert(array('content_id'=>$content_id,'phrase_id'=>$phrase_id,'score'=>$score));
             }
-            $this->content_translation_model->where(array('content_id'=>$content_id, 'language_slug'=>$language_slug))->update(array('rake'=>'1'));
+            $this->content_model->where(array('id'=>$content_id))->update(array('rake'=>'1'));
         }
 
         foreach($extracted_phrases as $key => $score)
@@ -436,31 +436,31 @@ class Rake extends Admin_Controller
 
     public function add_remove_keyword($language_slug, $content_id, $word_id, $appearances=0)
     {
-        if($keyword = $this->keyword_model->where(array('word_id'=>$word_id,'content_id'=>$content_id,'language_slug'=>$language_slug))->get())
+        if($keyword = $this->keyword_model->where(array('word_id'=>$word_id,'content_id'=>$content_id))->get())
         {
             $this->postal->add('The keyword was deleted.','success');
             $this->keyword_model->delete($keyword->id);
         }
         else
         {
-            $insert_data = array('word_id'=>$word_id,'content_id'=>$content_id,'language_slug'=>$language_slug,'appearances'=>$appearances);
+            $insert_data = array('word_id'=>$word_id,'content_id'=>$content_id,'appearances'=>$appearances);
             if($this->keyword_model->insert($insert_data))
             {
                 $this->postal->add('The keyword was inserted.','success');
             }
 
         }
-        redirect('admin/rake/analyze/'.$language_slug.'/'.$content_id);
+        redirect('admin/rake/analyze/'.$content_id);
 
     }
 
-    public function refresh($language_slug, $content_id, $word_id, $appearances=0)
+    public function refresh($content_id, $word_id, $appearances=0)
     {
-        if($this->keyword_model->where(array('word_id'=>$word_id,'content_id'=>$content_id,'language_slug'=>$language_slug))->update(array('appearances'=>$appearances)))
+        if($this->keyword_model->where(array('word_id'=>$word_id,'content_id'=>$content_id))->update(array('appearances'=>$appearances)))
         {
             $this->postal->add('The keyword was updated.','success');
         }
-        redirect('admin/rake/analyze/'.$language_slug.'/'.$content_id);
+        redirect('admin/rake/analyze/'.$content_id);
     }
 
 

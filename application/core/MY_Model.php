@@ -128,6 +128,10 @@ class MY_Model extends CI_Model
     public $pagination_delimiters;
     public $pagination_arrows;
 
+    /* validation */
+    private $validated = TRUE;
+    private $row_fields_to_update = array();
+
 
     /**
      * The various callbacks available to the model. Each are
@@ -255,14 +259,60 @@ class MY_Model extends CI_Model
         return $data;
     }
 
+    public function from_form($rules = NULL,$row_fields_to_update = array())
+    {
+        $this->_get_table_fields();
+        $this->load->library('form_validation');
+        if(!isset($rules))
+        {
+            $rules = $this->rules['insert'];
+        }
+        $this->form_validation->set_rules($rules);
+        if($this->form_validation->run())
+        {
+            $this->fillable_fields();
+            $this->validated = array();
+            foreach($this->_can_be_filled as $field)
+            {
+                $this->validated[$field] = $this->input->post($field);
+            }
+
+            if(!empty($row_fields_to_update))
+            {
+                foreach ($row_fields_to_update as $field) {
+                    if (in_array($field, $this->table_fields)) {
+                        $this->row_fields_to_update[$field] = $this->input->post($field);
+                    }
+
+                }
+            }
+            return $this;
+        }
+        else
+        {
+            $this->validated = FALSE;
+            return $this;
+        }
+
+    }
+
     /**
      * public function insert($data)
      * Inserts data into table. Can receive an array or a multidimensional array depending on what kind of insert we're talking about.
      * @param $data
      * @return int/array Returns id/ids of inserted rows
      */
-    public function insert($data)
+    public function insert($data = NULL)
     {
+        if(!isset($data) && $this->validated!=FALSE)
+        {
+            $data = $this->validated;
+            $this->validated = FALSE;
+        }
+        else
+        {
+            return FALSE;
+        }
         $data = $this->_prep_before_write($data);
 
         //now let's see if the array is a multidimensional one (multiple rows insert)
@@ -322,8 +372,17 @@ class MY_Model extends CI_Model
      * @param $column_name_where
      * @return str/array Returns id/ids of inserted rows
      */
-    public function update($data, $column_name_where = NULL)
+    public function update($data = NULL, $column_name_where = NULL)
     {
+        if(!isset($data) && $this->validated!=FALSE)
+        {
+            $data = $this->validated;
+            $this->validated = FALSE;
+        }
+        elseif(!isset($data))
+        {
+            return FALSE;
+        }
         // Prepare the data...
         $data = $this->_prep_before_write($data);
 
@@ -342,6 +401,11 @@ class MY_Model extends CI_Model
                 $data[$this->_updated_at_field] = date('Y-m-d H:i:s');
             }
             $data = $this->trigger('before_update',$data);
+            if($this->validated!=FALSE && !empty($this->row_fields_to_update))
+            {
+                $this->where($this->row_fields_to_update);
+                $this->row_fields_to_update = array();
+            }
             if(isset($column_name_where))
             {
                 if (is_array($column_name_where))
