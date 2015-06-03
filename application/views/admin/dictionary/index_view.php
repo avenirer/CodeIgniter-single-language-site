@@ -3,7 +3,7 @@
     <div class="row">
         <div class="col-lg-12">
             <?php
-            echo anchor('admin/dictionary/add-word/'.$language_slug,'Add word','class="btn btn-primary" target="_blank"');
+            echo anchor('admin/dictionary/add-word','Add word','class="btn btn-primary" target="_blank"');
             ?>
         </div>
     </div>
@@ -36,8 +36,8 @@
                     echo '<span class="glyphicon glyphicon-thumbs-'.$icon.'" aria-hidden="true"'.$style.'></span>';
                     echo '</td>';
                     echo '<td>';
-                    echo anchor('admin/dictionary/edit/'.$language_slug.'/'.$word->id,'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>','target="_blank"');
-                    echo ' '.anchor('admin/dictionary/delete/'.$language_slug.'/'.$word->id,'<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>','onclick="return confirm(\'Are you sure you want to delete?\')"');
+                    echo anchor('admin/dictionary/edit/'.$word->id,'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>','target="_blank"');
+                    echo ' '.anchor('admin/dictionary/delete/'.$word->id,'<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>','onclick="return confirm(\'Are you sure you want to delete?\')"');
                     echo '</td>';
                     /*
                     echo ' '.anchor('admin/images/index/post/'.$post_id,'<span class="glyphicon glyphicon-picture"></span>');

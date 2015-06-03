@@ -19,15 +19,13 @@ class Dictionary_model extends MY_Model
         'insert' => array(
             'word' => array('field'=>'word','label'=>'Word','rules'=>'trim|required'),
             'root_word' => array('field'=>'root_word','label'=>'Root of word','rules'=>'trim'),
-            'noise_word' => array('field'=>'noise_word','label'=>'Noise word','rules'=>'trim'),
-            'language_slug' => array('field'=>'language_slug','label'=>'language_slug','rules'=>'trim|required')
+            'noise_word' => array('field'=>'noise_word','label'=>'Noise word','rules'=>'trim')
         ),
         'update' => array(
             'word' => array('field'=>'word','label'=>'Word','rules'=>'trim|required'),
             'root_word' => array('field'=>'root_word','label'=>'Root of word','rules'=>'trim'),
             'noise_word' => array('field'=>'noise_word','label'=>'Noise word','rules'=>'trim'),
-            'word_id' => array('field'=>'word_id', 'label'=>'Word ID', 'rules'=>'trim|is_natural_no_zero|required'),
-            'language_slug' => array('field'=>'language_slug','label'=>'language_slug','rules'=>'trim|required')
+            'word_id' => array('field'=>'word_id', 'label'=>'Word ID', 'rules'=>'trim|is_natural_no_zero|required')
         )
     );
 }

@@ -10,37 +10,32 @@ class Dictionary extends Admin_Controller
         $this->load->model('dictionary_model');
 	}
 
-	public function index($language_slug = NULL)
+	public function index()
     {
-        $language_slug = (isset($language_slug) && array_key_exists($language_slug, $this->langs)) ? $language_slug : $this->current_lang;
         $this->load->model('dictionary_model');
-
         $total_words = $this->dictionary_model->count();
-        $words = $this->dictionary_model->where('language_slug',$language_slug)->order_by('verified,word','ASC')->paginate(200,$total_words);
+        $words = $this->dictionary_model->order_by('verified,word','ASC')->paginate(200,$total_words);
         $this->data['words'] = $words;
-        $this->data['language_slug'] = $language_slug;
         $this->data['next_previous_pages'] = $this->dictionary_model->all_pages;
         $this->render('admin/dictionary/index_view');
     }
-    public function add_word_from_content($content_id,$language_slug,$word)
+    public function add_word_from_content($content_id,$word)
     {
         $this->load->model('dictionary_model');
         $word = urldecode($word);
-        if($word_id = $this->dictionary_model->insert(array('word'=>$word,'language_slug'=>$language_slug,'verified'=>'0')))
+        if($word_id = $this->dictionary_model->insert(array('word'=>$word,'verified'=>'0')))
         {
-            $this->session->set_flashdata('message', 'The word was inserted.');
+            $this->postal->add('The word was inserted.','success');
         }
         else
         {
-            $this->session->set_flashdata('message', 'Couldn\'t insert word.');
+            $this->postal->add('Couldn\'t insert word.','error');
         }
-        redirect('admin/rake/analyze/'.$language_slug.'/'.$content_id.'/#add_words');
+        redirect('admin/rake/analyze/'.$content_id.'/#add_words');
     }
 
-    public function add_word($language_slug)
+    public function add_word()
     {
-        $language_slug = (isset($language_slug) && array_key_exists($language_slug, $this->langs)) ? $language_slug : $this->current_lang;
-        $this->data['language_slug'] = $language_slug;
         $this->load->model('dictionary_model');
         $rules = $this->dictionary_model->rules;
         $this->form_validation->set_rules($rules['insert']);
@@ -56,7 +51,7 @@ window.opener.location.reload();
 $(\'#root_word_options\').textext({
     plugins : \'autocomplete ajax\',
     ajax : {
-        url : \''.site_url('admin/dictionary/autosuggest/'.$language_slug.'/?').'\',
+        url : \''.site_url('admin/dictionary/autosuggest/?').'\',
         dataType : \'json\',
         cacheResults : true
     }
@@ -64,20 +59,18 @@ $(\'#root_word_options\').textext({
             $this->render('admin/dictionary/create_view');
         }
         else {
-            $language_slug = $this->input->post('language_slug');
             $word = strtolower($this->input->post('word'));
             $root_word = trim($this->input->post('root_word'), '"');
             $noise_word = (null !== $this->input->post('noise_word')) ? '1' : '0';
 
             $insert_data = array();
-            $insert_data['language_slug'] = $language_slug;
             $insert_data['word'] = $word;
             if (strlen($root_word) > 0)
             {
-                $root = $this->dictionary_model->where(array('word' => $root_word, 'language_slug'=>$language_slug))->get();
+                $root = $this->dictionary_model->where(array('word' => $root_word))->get();
                 if ($root === FALSE)
                 {
-                    $root_id = $this->dictionary_model->insert(array('word' => $root_word,'language_slug'=>$language_slug));
+                    $root_id = $this->dictionary_model->insert(array('word' => $root_word));
                 }
                 else {
                     $root_id = $root->id;
@@ -92,25 +85,24 @@ $(\'#root_word_options\').textext({
             $insert_data['verified'] = '1';
             if ($word_id = $this->dictionary_model->insert($insert_data))
             {
-                $this->session->set_flashdata('message', 'The word was inserted.');
+                $this->postal->add('The word was inserted','success');
             }
             else
             {
-                $this->session->set_flashdata('message', 'Couldn\'t insert word.');
+                $this->postal->add('Couldn\'t insert word','error');
             }
 
             echo '<script>window.close();</script>';
         }
     }
 
-    public function autosuggest($language_slug = NULL, $q = NULL)
+    public function autosuggest($q = NULL)
     {
-        $language_slug = (isset($language_slug) && array_key_exists($language_slug, $this->langs)) ? $language_slug : $this->current_lang;
         if(isset($_GET['q']))
         {
             $query = $_GET['q'];
             $data = array();
-            if($words = $this->dictionary_model->where(array('parent_id'=>'0','language_slug'=>$language_slug))->where('word','like',$query)->get_all())
+            if($words = $this->dictionary_model->where(array('parent_id'=>'0'))->where('word','like',$query)->get_all())
             {
                 foreach ($words as $word) {
                     $data[] = $word->word;
@@ -121,10 +113,9 @@ $(\'#root_word_options\').textext({
         }
     }
 
-    public function edit($language_slug, $word_id)
+    public function edit($word_id)
     {
         $this->load->model('dictionary_model');
-        $this->data['language_slug'] = $language_slug;
         $word = $this->dictionary_model->get($word_id);
         $this->data['root_word'] = '';
         if($word->parent_id!=0 && ($root_word = $this->dictionary_model->get($word->parent_id)))
@@ -146,7 +137,7 @@ window.opener.location.reload();
 $(\'#root_word_options\').textext({
     plugins : \'autocomplete ajax\',
     ajax : {
-        url : \''.site_url('admin/dictionary/autosuggest/'.$language_slug.'/?').'\',
+        url : \''.site_url('admin/dictionary/autosuggest/?').'\',
         dataType : \'json\',
         cacheResults : true
     }
@@ -159,7 +150,6 @@ $(\'#root_word_options\').textext({
             $word_id = $this->input->post('word_id');
             $root_word = trim($this->input->post('root_word'),'"');
             $noise_word = $this->input->post('noise_word');
-            $language_slug = $this->input->post('language_slug');
             $this->load->model('dictionary_model');
             $update_data = array();
             $update_data['word'] = $the_word;
@@ -167,10 +157,10 @@ $(\'#root_word_options\').textext({
             $update_data['noise'] = $noise_word;
             if(strlen($root_word)>0)
             {
-                $root = $this->dictionary_model->where(array('word'=>$root_word,'language_slug'=>$language_slug))->get();
+                $root = $this->dictionary_model->where(array('word'=>$root_word))->get();
                 if($root===FALSE)
                 {
-                    $root_id = $this->dictionary_model->insert(array('word'=>$root_word,'language_slug'=>$language_slug));
+                    $root_id = $this->dictionary_model->insert(array('word'=>$root_word));
                 }
                 else
                 {
@@ -188,11 +178,11 @@ $(\'#root_word_options\').textext({
             }
             if($this->dictionary_model->update($update_data,$word_id))
             {
-                $this->session->set_flashdata('message', 'The word was updated successfuly.');
+                $this->postal->add('The word was updated successfuly','success');
             }
             else
             {
-                $this->session->set_flashdata('message', 'Couldn\'t update word.');
+                $this->postal->add('Couldn\'t update word','error');
             }
             //$letter = substr($the_word, 0, 1);
             echo '<script>window.close();</script>';
@@ -202,16 +192,14 @@ $(\'#root_word_options\').textext({
         //redirect('admin/dictionary','refresh');
     }
 
-    public function delete($language_slug, $word_id)
+    public function delete($word_id)
     {
         $this->load->model('dictionary_model');
-        //$this->data['language_slug'] = $language_slug;
         $word = $this->dictionary_model->get($word_id);
         $the_word = $word->word;
-        //$this->data['root_word'] = '';
         $child_words = $this->dictionary_model->where('parent_id', $word->id)->update(array('parent_id' => '0', 'verified' => '0'));
         $deleted = $this->dictionary_model->delete($word->id);
-        $this->session->set_flashdata('message', 'The word ' . $the_word . ' was deleted. Also there were ' . $child_words . ' that had the status changed');
-        redirect('admin/dictionary/index/' . $language_slug, 'refresh');
+        $this->postal->add('The word ' . $the_word . ' was deleted. Also there were ' . $child_words . ' that had the status changed','success');
+        redirect('admin/dictionary');
     }
 }

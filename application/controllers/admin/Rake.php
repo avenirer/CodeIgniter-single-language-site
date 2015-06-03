@@ -12,9 +12,7 @@ class Rake extends Admin_Controller
             redirect('admin');
         }
         $this->load->model('content_model');
-        $this->load->model('content_translation_model');
         $this->load->model('dictionary_model');
-        $this->load->model('language_model');
         $this->load->model('phrase_model');
         $this->load->model('keyword_model');
         $this->load->model('keyphrase_model');
@@ -78,9 +76,9 @@ class Rake extends Admin_Controller
         redirect('admin/rake');
 	}
 
-    public function analyze($language_slug,$content_id)
+    public function analyze($content_id)
     {
-        $selected_keywords = $this->keyword_model->where(array('content_id'=>$content_id,'language_slug'=>$language_slug))->get_all();
+        $selected_keywords = $this->keyword_model->where(array('content_id'=>$content_id))->get_all();
         $keywords = array();
         if($selected_keywords)
         {
@@ -89,16 +87,14 @@ class Rake extends Admin_Controller
                 $keywords[$word->word_id] = array('appearances'=>$word->appearances,'keyword_id'=>$word->id);
             }
         }
-        $this->data['selected_keywords'] = $keywords;
-        $this->data['language_slug'] = $language_slug;
-        $this->data['content_id'] = $content_id;
         $content = $this->content_model->get($content_id);
+        $this->data['selected_keywords'] = $keywords;
+        $this->data['content_id'] = $content->id;
         $this->data['content_type'] = $content->content_type;
-        $translation = $this->content_translation_model->where(array('language_slug'=>$language_slug,'content_id' => $content_id))->get();
-        $this->keyphrase_model->where(array('content_id'=>$content_id,'language_slug'=>$language_slug))->delete();
+        $this->keyphrase_model->where(array('content_id'=>$content->id))->delete();
 
 
-        $text = strip_tags($translation->title).'. '.strip_tags($translation->content);
+        $text = strip_tags($content->title).'. '.strip_tags($content->content);
         $text = trim($text,".");
         $text = html_entity_decode($text, ENT_QUOTES,'UTF-8');
         $text = str_replace(PHP_EOL, ' ', $text);
@@ -134,7 +130,7 @@ class Rake extends Admin_Controller
         $not_in_dictionary = array();
         foreach($words as $word)
         {
-            if(!($this->dictionary_model->where(array('word'=>$word,'language_slug'=>$language_slug))->get()))
+            if(!($this->dictionary_model->where(array('word'=>$word))->get()))
             {
                 $not_in_dictionary[] = strtolower($word);
 
@@ -144,7 +140,7 @@ class Rake extends Admin_Controller
         $this->data['not_in_dictionary'] = $not_in_dictionary;
 
         $noise_words = array();
-        $noises = $this->dictionary_model->where(array('noise'=>'1','parent_id'=>'0','language_slug'=>$language_slug))->get_all();
+        $noises = $this->dictionary_model->where(array('noise'=>'1','parent_id'=>'0'))->get_all();
         if(!empty($noises))
         {
             foreach($noises as $noise)
@@ -153,7 +149,7 @@ class Rake extends Admin_Controller
             }
         }
 
-        $dictionary = $this->dictionary_model->where('language_slug',$language_slug)->where('verified','1')->where('word', $words)->get_all();
+        $dictionary = $this->dictionary_model->where('verified','1')->where('word', $words)->get_all();
 
         $word_ids = array();
 
@@ -170,7 +166,7 @@ class Rake extends Admin_Controller
 
         $the_base_words = array();
         if(!empty($word_ids)) {
-            $base_words = $this->dictionary_model->where('language_slug', $language_slug)->where('id', $word_ids, NULL, FALSE)->get_all();
+            $base_words = $this->dictionary_model->where('id', $word_ids, NULL, FALSE)->get_all();
             foreach($base_words as $the_word)
             {
                 $the_base_words[$the_word->id] = $the_word->word;

@@ -2,7 +2,7 @@
 <div class="container" style="margin-top:60px;">
     <div class="row">
         <div class="col-lg-12">
-            <h1>Add word in <?php echo strtolower($language_slug);?> dictionary</h1>
+            <h1>Add word dictionary</h1>
             <?php echo form_open();?>
             <div class="form-group">
                 <?php
@@ -26,12 +26,10 @@
                     </label>
                 </div>
             </div>
-            <?php echo form_error('language_slug');?>
-            <?php echo form_hidden('language_slug',set_value('language_slug',$language_slug));?>
             <?php
             $submit_button = 'Add word';
             echo form_submit('submit', $submit_button, 'class="btn btn-primary btn-lg btn-block"');?>
-            <?php echo anchor('/admin/dictionary/index/'.$language_slug, 'Cancel','class="btn btn-default btn-lg btn-block" onclick="if (window.opener && window.opener.open && !window.opener.closed){window.close()};"');?>
+            <?php echo anchor('/admin/dictionary/index/', 'Cancel','class="btn btn-default btn-lg btn-block" onclick="if (window.opener && window.opener.open && !window.opener.closed){window.close()};"');?>
             <?php echo form_close();?>
         </div>
     </div>
