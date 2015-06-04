@@ -7,7 +7,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title><?php echo $page_title;?></title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script type="text/javascript" src="<?php echo site_url('assets/admin/js/moment.js');?>"></script>
         <link href="<?php echo site_url('assets/admin/css/bootstrap.min.css');?>" rel="stylesheet">
+        <link href="<?php echo site_url('assets/admin/css/bootstrap-datetimepicker.min.css');?>" rel="stylesheet">
         <?php echo $before_head;?>
         <link rel="stylesheet" href="<?php echo site_url('assets/admin/css/textext/textext.core.css');?>" type="text/css" />
         <!--<link rel="stylesheet" href="<?php echo site_url('assets/admin/css/textext/textext.plugin.tags.css');?>" type="text/css" />-->
