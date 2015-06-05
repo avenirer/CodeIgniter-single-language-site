@@ -72,7 +72,7 @@
                     <?php
                     echo form_label('Order', 'order');
                     echo form_error('order');
-                    echo form_input('order', set_value('order', 0), 'class="form-control"');
+                    echo form_input('order', set_value('order', '0'), 'class="form-control"');
                     ?>
                 </div>
             <?php

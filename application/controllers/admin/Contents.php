@@ -42,7 +42,7 @@ class Contents extends Admin_Controller
             $title = $this->input->post('title');
             $short_title = (strlen($this->input->post('short_title')) > 0) ? $this->input->post('short_title') : $title;
             $slug = (strlen($this->input->post('slug')) > 0) ? url_title($this->input->post('slug'),'-',TRUE) : url_title(convert_accented_characters($title),'-',TRUE);
-            $order = $this->input->post('order');
+            $order = (int) $this->input->post('order');
             $content = $this->input->post('content');
             $teaser = (strlen($this->input->post('teaser')) > 0) ? $this->input->post('teaser') : substr($content, 0, strpos($content, '<!--more-->'));
             if($teaser == 0) $teaser = '';
@@ -62,8 +62,8 @@ class Contents extends Admin_Controller
                 'page_keywords' => $page_keywords,
                 'order' => $order,
                 'published_at'=>$published_at,
-                'parent_id' => $parent_id,
-                'created_by'=>$this->user_id);
+                'parent_id' => $parent_id
+            );
 
             if($content_id = $this->content_model->insert($insert_data))
             {
@@ -73,8 +73,7 @@ class Contents extends Admin_Controller
                     array(
                     'content_type'=> $content_type,
                     'content_id'=>$content_id,
-                    'url'=>$url,
-                    'created_by'=>$this->user_id)
+                    'url'=>$url)
                 );
             }
 
@@ -127,8 +126,7 @@ class Contents extends Admin_Controller
                     'page_keywords' => $page_keywords,
                     'parent_id' => $parent_id,
                     'published_at' => $published_at,
-                    'order' => $order,
-                    'updated_by' => $this->user_id);
+                    'order' => $order);
 
                 if ($this->content_model->update($update_data, $content_id))
                 {
@@ -138,8 +136,7 @@ class Contents extends Admin_Controller
                         $new_slug = array(
                             'content_type' => $content->content_type,
                             'content_id' => $content->id,
-                            'url' => $url,
-                            'created_by' => $this->user_id);
+                            'url' => $url);
                         if($slug_id =  $this->slug_model->insert($new_slug))
                         {
                             $this->slug_model->where(array('content_type'=>$content->content_type, 'id !='=>$slug_id))->update(array('redirect'=>$slug_id,'updated_by'=>$this->user_id));
