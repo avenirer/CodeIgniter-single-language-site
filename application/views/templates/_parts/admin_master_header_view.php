@@ -109,8 +109,8 @@ if($this->ion_auth->logged_in()) {
                 <ul class="nav navbar-nav">
                     <li><?php echo anchor('admin/menus','Menus');?></li>
                     <li><?php echo anchor('admin/contents/index/page','Pages');?></li>
-                    <li><?php echo anchor('admin/contents/index/category','Categories');?></li>
                     <li><?php echo anchor('admin/contents/index/post','Posts');?></li>
+                    <li><?php echo anchor('admin/contents/index/event','Events');?></li>
                     <li><?php echo anchor('admin/rake','RAKE Tool');?></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">

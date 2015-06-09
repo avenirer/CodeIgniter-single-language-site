@@ -3,7 +3,18 @@
     <div class="row">
         <div class="col-lg-12">
             <?php
-            echo anchor('admin/contents/create/'.$content_type,'Add '.$content_type,'class="btn btn-primary"');
+            echo anchor('admin/contents/create/'.$content_type,'Add '.str_replace('_',' ',$content_type),'class="btn btn-primary"');
+            if($content_type == 'post')
+            {
+                echo ' '.anchor('admin/contents/index/category','Categories', 'class="btn btn-success"');
+                echo ' '.anchor('admin/contents/create/category','Add category','class="btn btn-primary"');
+            }
+
+            if($content_type == 'event')
+            {
+                echo ' '.anchor('admin/contents/index/event_type','Event types', 'class="btn btn-success"');
+                echo ' '.anchor('admin/contents/create/event_type','Add event type','class="btn btn-primary"');
+            }
             ?>
         </div>
     </div>
@@ -14,7 +25,7 @@
             echo '<thead>';
             echo '<tr>';
             echo '<th>ID</th>';
-            echo '<th>'.ucfirst($content_type).' title</th>';
+            echo '<th>'.ucfirst(str_replace('_',' ',$content_type)).' title</th>';
             echo '<th>Featured</th>';
             echo '<th>Operations</th>';
             echo '</tr>';
@@ -27,7 +38,13 @@
                 {
                     echo '<tr>';
                     echo '<td>'.$content->id.'</td>';
-                    echo '<td>'.$content->title.'</td>';
+                    echo '<td>';
+                    echo $content->title;
+                    if($content->content_type == 'event')
+                    {
+                        echo ' '.anchor('admin/calendar/index/event/'.$content->id,'<span class="glyphicon glyphicon-calendar"></span>');
+                    }
+                    echo '</td>';
                     echo '<td>';
                     if(strlen($content->featured_image)>0)
                     {

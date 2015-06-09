@@ -919,6 +919,7 @@ class MY_Model extends CI_Model
                         }
                         $the_select = implode(',',$select);
                         $this->_database->select($the_select);
+                        $this->_database->select($foreign_table.'.'.$foreign_key);
                     }
 
                     if(array_key_exists('where',$request['parameters']))
@@ -1113,7 +1114,7 @@ class MY_Model extends CI_Model
     }
 
     /**
-     * public funciton fields($fields)
+     * public function fields($fields)
      * does a select() of the $fields
      * @param $fields the fields needed
      * @return $this
@@ -1123,6 +1124,17 @@ class MY_Model extends CI_Model
         if(isset($fields))
         {
             $fields = (is_array($fields)) ? implode(',',$fields) : $fields;
+            if(!empty($fields))
+            {
+                foreach($fields as &$field)
+                {
+                    $exploded = explode('.',$field);
+                    if(sizeof($exploded)<2)
+                    {
+                        $field = $this->table.'.'.$field;
+                    }
+                }
+            }
             $this->_select = $fields;
         }
         return $this;

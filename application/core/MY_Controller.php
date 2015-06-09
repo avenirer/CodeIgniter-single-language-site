@@ -42,6 +42,7 @@ class Admin_Controller extends MY_Controller
 	function __construct()
 	{
 		parent::__construct();
+        $this->load->library('form_validation');
 		$this->load->library('ion_auth');
         $this->load->library('postal');
 		$this->load->helper('url');
