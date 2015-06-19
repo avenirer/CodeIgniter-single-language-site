@@ -42,9 +42,11 @@ class Admin_Controller extends MY_Controller
 	function __construct()
 	{
 		parent::__construct();
+        $this->load->library('session');
         $this->load->library('form_validation');
 		$this->load->library('ion_auth');
         $this->load->library('postal');
+        $this->load->library('rat');
 		$this->load->helper('url');
 		if (!$this->ion_auth->logged_in())
 		{
@@ -53,7 +55,8 @@ class Admin_Controller extends MY_Controller
 		}
         $current_user = $this->ion_auth->user()->row();
         $this->user_id = $current_user->id;
-		$this->data['current_user'] = $current_user;
+        $_SESSION['user_id'] = $this->user_id;
+        $this->data['current_user'] = $current_user;
 		$this->data['current_user_menu'] = '';
 		if($this->ion_auth->in_group('admin'))
 		{

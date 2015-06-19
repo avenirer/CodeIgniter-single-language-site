@@ -2,7 +2,7 @@
     <div class="col-lg-4 col-lg-offset-4">
         <h1>Login</h1>
         <?php echo $this->session->flashdata('message');?>
-        <?php echo form_open('',array('class'=>'form-horizontal'));?>
+        <?php echo form_open();?>
         <div class="form-group">
             <?php echo form_label('Username','identity');?>
             <?php echo form_error('identity');?>

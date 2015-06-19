@@ -46,7 +46,8 @@ CREATE TABLE `calendar` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `calendar` (`id`, `start_dt`, `end_dt`, `content_type`, `content_id`, `title`, `short_title`, `teaser`, `content`, `page_title`, `page_description`, `page_keywords`, `created_at`, `updated_at`, `deleted_at`, `created_by`, `updated_by`, `deleted_by`, `published`) VALUES
-(3,	'2015-06-09 00:00:00',	'2015-06-09 00:00:00',	'event',	15,	'teada vdaefa w',	'dafeawfaw adfeaw',	'',	'',	'teada vdaefa w',	'',	'',	'2015-06-09 12:02:10',	'2015-06-09 12:07:49',	NULL,	1,	1,	NULL,	0);
+(3,	'2015-06-09 00:00:00',	'2015-06-09 00:00:00',	'event',	15,	'teada vdaefa w',	'dafeawfaw adfeaw',	'',	'',	'teada vdaefa w',	'',	'',	'2015-06-09 12:02:10',	'2015-06-10 11:11:56',	'2015-06-10 11:30:29',	1,	1,	NULL,	1),
+(4,	'2015-07-04 00:00:00',	'2015-07-01 00:00:00',	'event',	15,	'a new date',	'a new date',	'',	'<p>dfaeg garg awegagdfar e</p>',	'a new date',	'',	'',	'2015-06-15 12:42:00',	'2015-06-15 12:42:08',	NULL,	1,	1,	NULL,	1);
 
 DROP TABLE IF EXISTS `ci_sessions`;
 CREATE TABLE `ci_sessions` (
@@ -213,6 +214,19 @@ CREATE TABLE `phrases` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `rat`;
+CREATE TABLE `rat` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `date_time` datetime DEFAULT NULL,
+  `code` int(11) DEFAULT NULL,
+  `message` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `rat` (`id`, `user_id`, `date_time`, `code`, `message`) VALUES
+(5,	1,	'2015-06-19 17:03:50',	0,	'The user logged in');
+
 DROP TABLE IF EXISTS `slugs`;
 CREATE TABLE `slugs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -231,10 +245,10 @@ CREATE TABLE `slugs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 INSERT INTO `slugs` (`id`, `content_type`, `content_id`, `url`, `redirect`, `created_at`, `updated_at`, `deleted_at`, `created_by`, `updated_by`, `deleted_by`) VALUES
-(14,	'calendar',	3,	'teada-vdaefa-w',	0,	'2015-06-09 12:02:11',	NULL,	NULL,	1,	0,	0),
-(12,	'calendar',	15,	'test-date',	14,	'2015-06-09 11:38:49',	'2015-06-09 12:02:11',	NULL,	1,	1,	0),
+(15,	'calendar',	4,	'a-new-date',	0,	'2015-06-15 12:42:00',	NULL,	NULL,	1,	0,	0),
+(12,	'calendar',	15,	'test-date',	15,	'2015-06-09 11:38:49',	'2015-06-15 12:42:00',	NULL,	1,	1,	0),
 (11,	'event',	15,	'test-the-event',	0,	'2015-06-09 11:37:14',	NULL,	NULL,	1,	0,	0),
-(10,	'calendar',	14,	'test-the-date',	14,	'2015-06-09 09:21:00',	'2015-06-09 12:02:11',	NULL,	1,	1,	0);
+(10,	'calendar',	14,	'test-the-date',	15,	'2015-06-09 09:21:00',	'2015-06-15 12:42:00',	NULL,	1,	1,	0);
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
@@ -259,7 +273,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `users` (`id`, `ip_address`, `username`, `password`, `salt`, `email`, `activation_code`, `forgotten_password_code`, `forgotten_password_time`, `remember_code`, `created_on`, `last_login`, `active`, `first_name`, `last_name`, `company`, `phone`) VALUES
-(1,	'127.0.0.1',	'administrator',	'$2y$08$G0h47xFzvBDD3DjwWD13XeCfwGuZgqtSodh5ARhDJLLWPRv0jSgfG',	'',	'admin@admin.com',	'',	NULL,	NULL,	NULL,	1268889823,	1433830026,	1,	'Admin',	'istrator',	'ADMIN',	'0');
+(1,	'127.0.0.1',	'administrator',	'$2y$08$G0h47xFzvBDD3DjwWD13XeCfwGuZgqtSodh5ARhDJLLWPRv0jSgfG',	'',	'admin@admin.com',	'',	NULL,	NULL,	NULL,	1268889823,	1434722629,	1,	'Admin',	'istrator',	'ADMIN',	'0');
 
 DROP TABLE IF EXISTS `users_groups`;
 CREATE TABLE `users_groups` (
@@ -290,4 +304,4 @@ CREATE TABLE `website` (
 INSERT INTO `website` (`title`, `page_title`, `status`, `admin_email`, `contact_email`, `modified_by`) VALUES
 ('CI site',	'CI site',	1,	'avenir.ro@gmail.com',	'avenir.ro@gmail.com',	'1');
 
--- 2015-06-09 09:09:39
+-- 2015-06-19 15:33:31

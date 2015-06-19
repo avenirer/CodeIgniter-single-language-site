@@ -43,6 +43,9 @@ class User extends MY_Controller
             $remember = (bool) $this->input->post('remember');
             if ($this->ion_auth->login($this->input->post('identity'), $this->input->post('password'), $remember))
             {
+                $user_id = $this->ion_auth->user()->row()->id;
+                $this->load->library('rat');
+                $this->rat->tattle('The user logged in',$user_id);
                 redirect('admin');
             }
             else
@@ -95,6 +98,8 @@ class User extends MY_Controller
 
     public function logout()
     {
+        $this->load->library('rat');
+        $this->rat->tattle('The user logged out');
         $this->ion_auth->logout();
         $this->postal->add($this->ion_auth->messages(),'error');
         redirect('admin/user/login');

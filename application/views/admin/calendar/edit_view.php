@@ -118,7 +118,7 @@
             echo form_hidden('id',$content->id);
             $submit_button = 'Edit date';
             echo form_submit('submit', $submit_button, 'class="btn btn-primary btn-lg btn-block"');?>
-            <?php echo anchor('/admin/calendar/index/'.$content->content_type.'/'.$content->id, 'Cancel','class="btn btn-default btn-lg btn-block"');?>
+            <?php echo anchor('/admin/calendar/index/'.$content->content_type.'/'.$content->content_id, 'Cancel','class="btn btn-default btn-lg btn-block"');?>
             <?php echo form_close();?>
         </div>
     </div>
