@@ -149,4 +149,10 @@ class Users extends Admin_Controller
         }
         redirect('admin/users');
     }
+
+    public function logs($user_id,$date = NULL)
+    {
+        $this->data['log'] = $this->rat->get_log($user_id,NULL,$date);
+        $this->render('admin/users/log_view');
+    }
 }

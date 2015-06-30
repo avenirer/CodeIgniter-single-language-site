@@ -69,6 +69,7 @@ class Calendar extends Admin_Controller
 
             if($date_id = $this->calendar_model->insert($insert_data))
             {
+                $this->rat->log('The user created a new date for an event named: '.$insert_data['title']);
                 $this->postal->add('A new date was created', 'success');
                 $this->slug_model->verify_insert(array('content_type'=> 'calendar','content_id'=>$date_id,'url'=>$slug));
             }
@@ -95,7 +96,7 @@ class Calendar extends Admin_Controller
         else
         {
             $content_id = $this->input->post('content_id');
-            $content = $this->content_model->get($content_id);
+            $content = $this->calendar_model->get($content_id);
             if($content!== FALSE)
             {
                 $parent_id = $this->input->post('parent_id');
@@ -122,7 +123,7 @@ class Calendar extends Admin_Controller
                     'published_at' => $published_at,
                     'order' => $order);
 
-                if ($this->content_model->update($update_data, $content_id))
+                if ($this->calendar_model->update($update_data, $content_id))
                 {
                     if(strlen($slug)>0)
                     {
@@ -136,6 +137,7 @@ class Calendar extends Admin_Controller
                             $this->slug_model->where(array('content_type'=>$content->content_type, 'id !='=>$slug_id))->update(array('redirect'=>$slug_id,'updated_by'=>$this->user_id));
                         }
                     }
+                    $this->rat->log('The user edited the event date having "'.$content->title.'" as title. The ID of the date is: '.$content->id);
                     $this->postal->add('The content was updated successfully.','success');
                 }
             }
@@ -143,7 +145,7 @@ class Calendar extends Admin_Controller
             {
                 $this->postal->add('There is no content to update.','error');
             }
-            redirect('admin/contents/index/'.$content->content_type);
+            redirect('admin/calendar/index/'.$content->content_type.'/'.$content->content_id);
         }
     }
 
@@ -154,6 +156,7 @@ class Calendar extends Admin_Controller
         {
             if($this->calendar_model->update(array('published'=>$published),$date->id))
             {
+                $this->rat->log('The user has set the publish status of the date having "'.$date->title.'" as title to '.$published.'. The ID of the date is: '.$date->id);
                 $this->postal->add('The published status was set.','success');
             }
             else
@@ -186,7 +189,7 @@ class Calendar extends Admin_Controller
             }
 
             $deleted_content = $this->calendar_model->delete($content->id);
-
+            $this->rat->log('The user deleted a date with the title: '.$content->title.'. The ID was: '.$date_id);
             $this->postal->add($deleted_content.' content was deleted. There were also '.$deleted_slugs.' slugs and '.$deleted_images.' images deleted.','success');
         }
         else

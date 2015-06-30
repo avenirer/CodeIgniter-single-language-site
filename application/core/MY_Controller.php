@@ -42,12 +42,8 @@ class Admin_Controller extends MY_Controller
 	function __construct()
 	{
 		parent::__construct();
-        $this->load->library('session');
-        $this->load->library('form_validation');
-		$this->load->library('ion_auth');
-        $this->load->library('postal');
-        $this->load->library('rat');
-		$this->load->helper('url');
+        $this->load->library(array('session','form_validation','ion_auth','postal','rat'));
+
 		if (!$this->ion_auth->logged_in())
 		{
 			//redirect them to the login page

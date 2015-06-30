@@ -142,6 +142,7 @@ class Contents extends Admin_Controller
                             $this->slug_model->where(array('content_type'=>$content->content_type, 'id !='=>$slug_id))->update(array('redirect'=>$slug_id,'updated_by'=>$this->user_id));
                         }
                     }
+                    $this->rat->log('The user edited the content type "'.$content->content_type.'" with the ID: '.$content->id.' having "'.$content->title.'" as title.');
                     $this->postal->add('The content was updated successfully.','success');
                 }
             }
@@ -178,6 +179,7 @@ class Contents extends Admin_Controller
         {
             if($this->content_model->update(array('published'=>$published),$content_id))
             {
+                $this->rat->log('The user set publish status to '.$published.' for the content type "'.$content->content_type.'" with the ID '.$content->id.' and the title "'.$content->title.'"');
                 $this->postal->add('The published status was set.','success');
             }
             else
@@ -237,6 +239,7 @@ class Contents extends Admin_Controller
 
             $deleted_content = $this->content_model->delete($content->id);
 
+            $this->rat->log('The user deleted the content type "'.$content->content_type.'" with the ID: '.$content->id.' and title: "'.$content->title.'"');
             $this->postal->add($deleted_content.' content was deleted. There were also '.$deleted_keywords.' keywords, '.$deleted_keyphrases.' key phrases, '.$deleted_slugs.' slugs and '.$deleted_images.' images deleted.','success');
         }
         else

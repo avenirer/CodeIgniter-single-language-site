@@ -45,7 +45,7 @@ class User extends MY_Controller
             {
                 $user_id = $this->ion_auth->user()->row()->id;
                 $this->load->library('rat');
-                $this->rat->tattle('The user logged in',$user_id);
+                $this->rat->log('The user logged in',$user_id);
                 redirect('admin');
             }
             else
@@ -99,7 +99,7 @@ class User extends MY_Controller
     public function logout()
     {
         $this->load->library('rat');
-        $this->rat->tattle('The user logged out');
+        $this->rat->log('The user logged out');
         $this->ion_auth->logout();
         $this->postal->add($this->ion_auth->messages(),'error');
         redirect('admin/user/login');
