@@ -108,9 +108,16 @@ if($this->ion_auth->logged_in()) {
             <div id="navbar" class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
                     <li><?php echo anchor('admin/menus','Menus');?></li>
-                    <li><?php echo anchor('admin/contents/index/page','Pages');?></li>
-                    <li><?php echo anchor('admin/contents/index/post','Posts');?></li>
-                    <li><?php echo anchor('admin/contents/index/event','Events');?></li>
+                    <?php
+                    if($menu_content_types!==false)
+                    {
+                        foreach($menu_content_types as $id => $name)
+                        {
+                            echo '<li>'.anchor('admin/contents/index/'.$id,ucfirst($name)).'</li>';
+                        }
+                    }
+                    ?>
+                    <li><?php echo anchor('admin/content-types','Content types');?></li>
                     <li><?php echo anchor('admin/rake','RAKE Tool');?></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">

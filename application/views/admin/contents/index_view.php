@@ -3,14 +3,14 @@
     <div class="row">
         <div class="col-lg-12">
             <?php
-            echo anchor('admin/contents/create/'.$content_type,'Add '.str_replace('_',' ',$content_type),'class="btn btn-primary"');
-            if($content_type == 'post')
+            echo anchor('admin/contents/create/'.$content_type->id,'Add '.str_replace('_',' ',$content_type->name),'class="btn btn-primary"');
+            if($content_type->name == 'post')
             {
                 echo ' '.anchor('admin/contents/index/category','Categories', 'class="btn btn-success"');
                 echo ' '.anchor('admin/contents/create/category','Add category','class="btn btn-primary"');
             }
 
-            if($content_type == 'event')
+            if($content_type->name == 'event')
             {
                 echo ' '.anchor('admin/contents/index/event_type','Event types', 'class="btn btn-success"');
                 echo ' '.anchor('admin/contents/create/event_type','Add event type','class="btn btn-primary"');
@@ -25,7 +25,7 @@
             echo '<thead>';
             echo '<tr>';
             echo '<th>ID</th>';
-            echo '<th>'.ucfirst(str_replace('_',' ',$content_type)).' title</th>';
+            echo '<th>'.ucfirst(str_replace('_',' ',$content_type->name)).' title</th>';
             echo '<th>Featured</th>';
             echo '<th>Operations</th>';
             echo '</tr>';

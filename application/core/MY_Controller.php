@@ -11,7 +11,7 @@ class MY_Controller extends CI_Controller
         $this->load->model('website_model');
         $this->website = $this->website_model->get();
         $this->data['website'] = $this->website;
-        $this->data['page_title'] = 'CI App';
+        $this->data['page_title'] = $this->website->title;
         $this->data['page_description'] = 'CI_App';
 		$this->data['before_head'] = '';
 		$this->data['before_body'] = '';
@@ -54,12 +54,14 @@ class Admin_Controller extends MY_Controller
         $_SESSION['user_id'] = $this->user_id;
         $this->data['current_user'] = $current_user;
 		$this->data['current_user_menu'] = '';
+        $this->load->model('content_type_model');
+        $this->data['menu_content_types'] = $this->content_type_model->as_dropdown('plural')->get_all();
 		if($this->ion_auth->in_group('admin'))
 		{
 			$this->data['current_user_menu'] = $this->load->view('templates/_parts/user_menu_admin_view.php', NULL, TRUE);
 		}
 
-		$this->data['page_title'] = 'CI App - Dashboard';
+		$this->data['page_title'] = $this->website->title.' - Dashboard';
 	}
 	protected function render($the_view = NULL, $template = 'admin_master')
 	{

@@ -25,33 +25,27 @@ class Content_model extends MY_Model
         return $data;
     }
 
-    public function get_parents_list($content_type,$content_id = 0)
+    public function get_parents_list($content_type_id,$content_id = 0)
     {
-        $this->db->select('id,short_title');
-        $this->db->order_by('short_title','asc');
-        $this->db->where('contents.id != ',$content_id);
-        if($content_type == 'post')
+        $this->load->model('content_type_model');
+        $content_type = $this->content_type_model->get($content_type_id);
+        $parent_id = $content_type->parent_id;
+        if($parent_id != 0)
         {
-            $this->db->where('contents.content_type','category');
-        }
-        elseif($content_type == 'event')
-        {
-            $this->db->where('contents.content_type','event_type');
-        }
-        else
-        {
-            $this->db->where('contents.content_type',$content_type);
-        }
-        $query = $this->db->get('contents');
-        $parents = array('0'=>'No parent');
-        if($query->num_rows()>0)
-        {
-            foreach($query->result() as $row)
-            {
-                $parents[$row->id] = $row->short_title;
+            $this->db->select('id,short_title');
+            $this->db->order_by('short_title', 'asc');
+            $this->db->where('contents.id != ', $content_id);
+            $this->db->where('contents.content_type_id', $parent_id);
+            $query = $this->db->get('contents');
+            $parents = array('0' => 'No parent');
+            if ($query->num_rows() > 0) {
+                foreach ($query->result() as $row) {
+                    $parents[$row->id] = $row->short_title;
+                }
             }
+            return $parents;
         }
-        return $parents;
+        return false;
     }
 
     public $rules = array(
@@ -66,7 +60,7 @@ class Content_model extends MY_Model
             'page_title' => array('field'=>'page_title','label'=>'Page title','rules'=>'trim'),
             'page_description' => array('field'=>'page_description','label'=>'Page description','rules'=>'trim'),
             'page_keywords' => array('field'=>'page_keywords','label'=>'Page keywords','rules'=>'trim'),
-            'content_type' => array('field'=>'content_type','label'=>'Content type','rules'=>'trim|required'),
+            'content_type_id' => array('field'=>'content_type_id','label'=>'Content type ID','rules'=>'trim|is_natural_no_zero|required'),
             'published_at' => array('field'=>'published_at','label'=>'Published at','rules'=>'trim|datetime')
         ),
         'update' => array(

@@ -11,23 +11,38 @@ class Contents extends Admin_Controller
             $this->postal->add('You are not allowed to visit the Contents page','error');
             redirect('admin','refresh');
         }
+        $this->load->model('content_type_model');
         $this->load->model('content_model');
         $this->load->model('slug_model');
         $this->load->library('form_validation');
         $this->load->helper('text');
 	}
 
-	public function index($content_type = 'page')
+	public function index($content_type_id = 0)
 	{
-        $list_content = $this->content_model->where('content_type',$content_type)->get_all();
-        $this->data['content_type'] = $content_type;
-        $this->data['contents'] = $list_content;
-        $this->render('admin/contents/index_view');
+        $content_type = $this->content_type_model->get($content_type_id);
+        if($content_type == false)
+        {
+            $this->postal->add('The content type doesn\'t exist','error');
+            redirect('admin');
+        }
+        else {
+            $list_content = $this->content_model->where('content_type_id', $content_type_id)->get_all();
+            $this->data['content_type'] = $content_type;
+            $this->data['contents'] = $list_content;
+            $this->render('admin/contents/index_view');
+        }
 	}
 
-    public function create($content_type = 'page')
+    public function create($content_type_id = 0)
     {
-        $this->data['parents'] = $this->content_model->get_parents_list($content_type);
+        $content_type = $this->content_type_model->get($content_type_id);
+        if($content_type_id == false)
+        {
+            $this->postal->add('The content type doesn\'t exist','error');
+            redirect('admin');
+        }
+        $this->data['parents'] = $this->content_model->get_parents_list($content_type->id);
         $this->data['content_type'] = $content_type;
         $rules = $this->content_model->rules;
         $this->form_validation->set_rules($rules['insert']);
@@ -37,7 +52,7 @@ class Contents extends Admin_Controller
         }
         else
         {
-            $content_type = $this->input->post('content_type');
+            $content_type_id = $this->input->post('content_type_id');
             $parent_id = $this->input->post('parent_id');
             $title = $this->input->post('title');
             $short_title = (strlen($this->input->post('short_title')) > 0) ? $this->input->post('short_title') : $title;
@@ -52,7 +67,7 @@ class Contents extends Admin_Controller
             $published_at = $this->input->post('published_at');
 
             $insert_data = array(
-                'content_type'=>$content_type,
+                'content_type_id'=>$content_type_id,
                 'title' => $title,
                 'short_title' => $short_title,
                 'teaser' => $teaser,
@@ -77,7 +92,9 @@ class Contents extends Admin_Controller
                 );
             }
 
-            redirect('admin/contents/index/'.$content_type,'refresh');
+            echo '...';
+
+            //redirect('admin/contents/index/'.$content_type,'refresh');
         }
     }
 

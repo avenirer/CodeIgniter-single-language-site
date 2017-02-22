@@ -2,14 +2,20 @@
 <div class="container" style="margin-top:60px;">
     <div class="row">
         <div class="col-lg-12">
-            <h1>Add <?php echo str_replace('_',' ',$content_type);?></h1>
+            <h1>Add <?php echo str_replace('_',' ',$content_type->name);?></h1>
             <?php echo form_open();?>
-            <div class="form-group">
-                <?php
-                echo form_label('Parent','parent_id');
-                echo form_dropdown('parent_id',$parents,set_value('parent_id',(isset($content->parent_id) ? $content->parent_id : '0')),'class="form-control"');
+            <?php
+            if(isset($parents)) {
                 ?>
-            </div>
+                <div class="form-group">
+                    <?php
+                    echo form_label('Parent', 'parent_id');
+                    echo form_dropdown('parent_id', $parents, set_value('parent_id', (isset($content->parent_id) ? $content->parent_id : '0')), 'class="form-control"');
+                    ?>
+                </div>
+                <?php
+            }
+            ?>
             <div class="form-group">
                 <?php
                 echo form_label('Title','title');
@@ -65,7 +71,7 @@
                     </div>
                 </div>
             </div>
-            <?php if(($content_type == 'page') || ($content_type=='category'))
+            <?php if (in_array($content_type->name, array('page','category')))
             {
             ?>
                 <div class="form-group">
@@ -77,7 +83,7 @@
                 </div>
             <?php
             }
-            if($content_type =='post' || $content_type == 'page' || $content_type == 'event')
+            if(in_array($content_type->name, array('post','page','event')))
             {
                 ?>
                 <div class="form-group">
@@ -93,7 +99,7 @@
             {
                 echo form_hidden('content', '');
             }
-            if($content_type == 'post')
+            if($content_type->name == 'post')
             {
                 ?>
                 <div class="form-group">
@@ -119,10 +125,10 @@
             ?>
             <?php
             echo form_error('content_type');
-            echo form_hidden('content_type',$content_type);
-            $submit_button = 'Add '.str_replace('_',' ',$content_type);
+            echo form_hidden('content_type_id',$content_type->id);
+            $submit_button = 'Add '.str_replace('_',' ',$content_type->name);
             echo form_submit('submit', $submit_button, 'class="btn btn-primary btn-lg btn-block"');?>
-            <?php echo anchor('/admin/contents/index/'.$content_type, 'Cancel','class="btn btn-default btn-lg btn-block"');?>
+            <?php echo anchor('/admin/contents/index/'.$content_type->id, 'Cancel','class="btn btn-default btn-lg btn-block"');?>
             <?php echo form_close();?>
         </div>
     </div>
