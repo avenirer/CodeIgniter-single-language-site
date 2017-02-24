@@ -2,6 +2,51 @@
 
 class Content_types extends Admin_Controller
 {
+    public $mysql_types = array(
+        'INT' => 'INT',
+        'TINYINT' => 'TINYINT',
+        'SMALLINT' => 'SMALLINT',
+        'MEDIUMINT' => 'MEDIUMINT',
+        'BIGINT' => 'BIGINT',
+        'FLOAT' => 'FLOAT',
+        'DOUBLE' => 'DOUBLE',
+        'DECIMAL' => 'DECIMAL',
+        'DATE' => 'DATE',
+        'DATETIME' => 'DATETIME',
+        'TIMESTAMP' => 'TIMESTAMP',
+        'TIME' => 'TIME',
+        'YEAR' => 'YEAR',
+        'CHAR' => 'CHAR',
+        'VARCHAR' => 'VARCHAR',
+        'BLOB' => 'BLOB',
+        'TEXT' => 'TEXT',
+        'TINYBLOB' => 'TINYBLOB',
+        'TINYTEXT' => 'TINYTEXT',
+        'MEDIUMBLOB' => 'MEDIUMBLOB',
+        'MEDIUMTEXT' => 'MEDIUMTEXT',
+        'LONGBLOB' => 'LONGBLOB',
+        'LONGTEXT' => 'LONGTEXT',
+        'ENUM' => 'ENUM'
+    );
+
+    public $mysql_index = array(
+        'NONE' => 'NONE',
+        'PRIMARY' => 'PRIMARY',
+        'UNIQUE' => 'UNIQUE',
+        'INDEX' => 'INDEX',
+        'FULLTEXT' => 'FULLTEXT',
+        'SPATIAL' => 'SPATIAL'
+    );
+
+    public $input_types = array(
+        'text'=>'text',
+        'textarea'=>'textarea',
+        'wysiwyg'=>'textarea with WYSIWYG',
+        'select'=>'select',
+        'checkbox'=>'checkbox',
+        'radio'=>'radio'
+    );
+
 
 	function __construct()
 	{
@@ -120,86 +165,156 @@ class Content_types extends Admin_Controller
             redirect('admin/content-types');
         }
         $table_fields = $this->content_type_model->get_fields_data($content_type);
+
         $this->data['content_type'] = $content_type;
         $this->data['table_fields'] = $table_fields;
         $this->render('admin/content_types/table_definition_view');
     }
 
-    public function publish($content_id, $published)
+    public function add_field($content_type_id)
     {
-        $content = $this->content_model->get($content_id);
-        if( ($content != FALSE) && ($published==1 || $published==0))
+        $content_type = $this->content_type_model->get($content_type_id);
+        if($content_type==false)
         {
-            if($this->content_model->update(array('published'=>$published),$content_id))
-            {
-                $this->rat->log('The user set publish status to '.$published.' for the content type "'.$content->content_type.'" with the ID '.$content->id.' and the title "'.$content->title.'"');
-                $this->postal->add('The published status was set.','success');
-            }
-            else
-            {
-                $this->postal->add('Couldn\'t set the published status.','error');
-            }
+            $this->postal->add('Couldn\' find the requested content type.','error');
+            redirect('admin/content-types');
+            die();
+        }
+
+        $field_positions = array('last'=>'Last','first'=>'First','before'=>'Before','after'=>'After');
+        $this->data['field_positions'] = $field_positions;
+        $in_list_positions = strtolower(implode(',',$field_positions));
+
+        $table_fields = $this->content_type_model->get_fields_data($content_type);
+        $table_fields_arr = array('-'=>'-');
+        foreach($table_fields as $field)
+        {
+            $table_fields_arr[$field->table_field] = $field->table_field;
+        }
+        $this->data['table_fields'] = $table_fields_arr;
+        $in_list_table_fields = implode(',',$table_fields_arr);
+
+        $this->data['mysql_types'] = $this->mysql_types;
+        $in_list_types = implode(',',$this->mysql_types);
+        $attributes = array('NONE' => 'NONE','BINARY' => 'BINARY','UNSIGNED' => 'UNSIGNED','UNSIGNED ZEROFILL' => 'UNSIGNED ZEROFILL','on update CURRENT_TIMESTAMP' => 'on update CURRENT_TIMESTAMP');
+        $this->data['attributes'] = $attributes;
+        $in_list_attributes = implode(',',$attributes);
+        $this->data['mysql_index'] = $this->mysql_index;
+        $in_list_index = implode(',',$this->mysql_index);
+        $this->data['input_types'] = $this->input_types;
+        $in_list_inputs = implode(',',$this->input_types);
+
+
+        $this->form_validation->set_rules('table_field','Table field name','trim|required|alpha_dash|not_in_list['.$in_list_table_fields.']');
+        $this->form_validation->set_rules('field_position','trim|required|in_list['.$in_list_positions.']');
+        $this->form_validation->set_rules('table_column','trim|required|in_list['.$in_list_table_fields.']');
+        $this->form_validation->set_rules('type','Type','trim|in_list['.$in_list_types.']');
+        $this->form_validation->set_rules('length','Length','trim');
+        $this->form_validation->set_rules('default','Default value','trim');
+        $this->form_validation->set_rules('attributes','trim|in_list['.$in_list_attributes.']');
+        $this->form_validation->set_rules('null','Accept NULL value','trim|in_list[0,1]');
+        $this->form_validation->set_rules('index','Index','trim|in_list['.$in_list_index.']');
+
+        $this->form_validation->set_rules('label_name','Label name','trim|required');
+        $this->form_validation->set_rules('input_type','Input type','trim|required|in_list['.$in_list_inputs.']');
+        $this->form_validation->set_rules('insert_validation_rules','Insert validation rules','trim|required');
+        $this->form_validation->set_rules('update_validation_rules','Update validation rules','trim|required');
+        $this->form_validation->set_rules('input_position','Input position','trim|required|is_natural');
+
+        if($this->form_validation->run()===false)
+        {
+            $this->render('admin/content_types/table_field_create_view');
         }
         else
         {
-            $this->postal->add('Can\'t find the content or the published status isn\'t correctly set.','error');
+            $input_definition = array('content_type_id'=>$content_type->id,'deletable'=>'1');
+
+            $table_field = trim($this->input->post('table_field'));
+            $type = trim($this->input->post('type'));
+            $field = array();
+            $field[$table_field] = array('type'=>$type);
+
+            $input_definition['table_field'] = $table_field;
+            $input_definition['tf_type'] = $type;
+
+            $length = $this->input->post('length');
+            if(strlen($length)!=0) {
+                $field[$table_field]['constraint'] = $length;
+                $input_definition['tf_constraint'] = $length;
+            }
+
+            $field_position = strtolower($this->input->post('field_position'));
+            $table_column = ($this->input->post('table_column')=='-') ? TRUE : $this->input->post('table_column');
+            $field[$table_field][$field_position] = $table_column;
+
+            $default_value = $this->input->post('default');
+            if(strlen($default_value)>0) {
+                $field[$table_field]['default'] = $default_value;
+                $input_definition['tf_default'] = $default_value;
+            }
+
+            $attributes = trim($this->input->post('attributes'));
+            if($attributes!='NONE') $field[$table_field][$attributes] = TRUE;
+            $input_definition['tf_attributes'] = $attributes;
+
+            $null = $this->input->post('null');
+            if($null=='1')
+            {
+                $field[$table_field]['null'] = TRUE;
+                $input_definition['tf_null'] = TRUE;
+            }
+            else
+            {
+                $input_definition['tf_null'] = '0';
+            }
+
+            $index = trim($this->input->post('index'));
+            if($index!='NONE') $field[$table_field][$index] = TRUE;
+            $input_definition['tf_index'] = $index;
+
+            $this->load->dbforge();
+            if($this->dbforge->add_column($content_type->table_name,$field))
+            {
+                $input_definition['input_label'] = $this->input->post('label_name');
+                $input_definition['input_type'] = $this->input->post('input_type');
+                $input_definition['insert_rules'] = $this->input->post('insert_validation_rules');
+                $input_definition['update_rules'] = $this->input->post('update_validation_rules');
+                $input_definition['input_order'] = $this->input->post('input_position');
+
+
+
+                $this->load->model('input_definition_model');
+                $this->input_definition_model->insert($input_definition);
+                $this->postal->add('Field added successfully','success');
+            }
+            else
+            {
+                $this->postal->add('There was a problem when adding field','error');
+            }
+
+            redirect('admin/content-types/table-definition/'.$content_type->id);
+
+            /*
+            echo '<pre>';
+            print_r($field);
+            echo '<pre>';
+
+            echo '<pre>';
+            print_r($this->input->post());
+            echo '</pre>';
+            */
         }
-        redirect('admin/contents/index/'.$content->content_type,'refresh');
+
+        print_r($content_type);
+    }
+
+    public function publish($content_id, $published)
+    {
+
     }
 
     public function delete($content_id)
     {
-        if($content = $this->content_model->get($content_id))
-        {
-            if($content->content_type=='event')
-            {
-                $this->load->model('calendar_model');
-                if($this->calendar_model->where(array('content_type'=>'event','content_id'=>$content->id))->get() !== FALSE)
-                {
-                    $this->postal->add('You must first delete the dates','error');
-                    redirect('admin/contents/index/event');
-                }
-            }
-            $deleted_slugs = $this->slug_model->where(array('content_type'=>$content->content_type,'content_id'=>$content->id))->delete();
-
-            if(strlen($content->featured_image)>0)
-            {
-                $deleted_feature = 1;
-                @unlink(FCPATH . 'media/' . $this->featured_image . '/' . $content->featured_image);
-            }
-            else
-            {
-                $deleted_feature = 0;
-            }
-
-            $deleted_images = 0;
-            $this->load->model('image_model');
-            $images = $this->image_model->where(array('content_type'=>$content->content_type,'content_id'=>$content->id))->get_all();
-            if(!empty($images))
-            {
-                foreach($images as $image)
-                {
-                    @unlink(FCPATH.'media/'.$image->file);
-                }
-                $deleted_images = $this->image_model->where(array('content_type'=>$content->content_type,'content_id'=>$content->id))->delete();
-            }
-
-            $this->load->model('keyword_model');
-            $deleted_keywords = $this->keyword_model->where(array('content_type'=>$content->content_type,'content_id'=>$content->id))->delete();
-
-            $this->load->model('keyphrase_model');
-            $deleted_keyphrases = $this->keyphrase_model->where(array('content_type'=>$content->content_type,'content_id'=>$content->id))->delete();
-
-            $deleted_content = $this->content_model->delete($content->id);
-
-            $this->rat->log('The user deleted the content type "'.$content->content_type.'" with the ID: '.$content->id.' and title: "'.$content->title.'"');
-            $this->postal->add($deleted_content.' content was deleted. There were also '.$deleted_keywords.' keywords, '.$deleted_keyphrases.' key phrases, '.$deleted_slugs.' slugs and '.$deleted_images.' images deleted.','success');
-        }
-        else
-        {
-            $this->postal->add('There is no content to delete.','error');
-        }
-        redirect('admin/contents/index/'.$content->content_type,'refresh');
 
     }
 }

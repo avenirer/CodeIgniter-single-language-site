@@ -37,15 +37,27 @@ class Contents extends Admin_Controller
     public function create($content_type_id = 0)
     {
         $content_type = $this->content_type_model->get($content_type_id);
-        if($content_type_id == false)
+        if($content_type == false)
         {
             $this->postal->add('The content type doesn\'t exist','error');
             redirect('admin');
         }
+
         $this->data['parents'] = $this->content_model->get_parents_list($content_type->id);
         $this->data['content_type'] = $content_type;
         $rules = $this->content_model->rules;
         $this->form_validation->set_rules($rules['insert']);
+
+        $this->load->model('input_definition_model');
+        $input_definitions = $this->input_definition_model->where(array('content_type_id'=>$content_type->id))->get_all();
+
+        echo '<pre>';
+        print_r($input_definitions);
+        echo '</pre>';
+
+
+        echo 'hello';
+        exit;
         if($this->form_validation->run()===FALSE)
         {
             $this->render('admin/contents/create_view');

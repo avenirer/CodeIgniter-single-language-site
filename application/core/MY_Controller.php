@@ -46,6 +46,7 @@ class Admin_Controller extends MY_Controller
 
 		if (!$this->ion_auth->logged_in())
 		{
+            $_SESSION['redirect_to'] = current_url();
 			//redirect them to the login page
 			redirect('admin/user/login', 'refresh');
 		}
@@ -58,7 +59,7 @@ class Admin_Controller extends MY_Controller
         $this->data['menu_content_types'] = $this->content_type_model->as_dropdown('plural')->get_all();
 		if($this->ion_auth->in_group('admin'))
 		{
-			$this->data['current_user_menu'] = $this->load->view('templates/_parts/user_menu_admin_view.php', NULL, TRUE);
+			$this->data['current_user_menu'] = $this->load->view('templates/_parts/user_menu_admin_view', NULL, TRUE);
 		}
 
 		$this->data['page_title'] = $this->website->title.' - Dashboard';

@@ -5,7 +5,7 @@
             <h1>Table/form definition for content type "<?php echo $content_type->name;?>"</h1>
             <h2>Table name: "<?php echo $content_type->table_name;?>"</h2>
             <?php
-            //echo anchor('admin/content-types/create','Add content type', 'class="btn btn-primary"');
+            echo anchor('admin/content-types/add-field/'.$content_type->id,'Add table field', 'class="btn btn-primary"');
             ?>
         </div>
     </div>
@@ -18,13 +18,14 @@
             echo '<th>Table field</th>';
             echo '<th>Type</th>';
             echo '<th>Constraint</th>';
-            echo '<th>Unsigned</th>';
+            echo '<th>Attribute</th>';
             echo '<th>Default</th>';
             echo '<th>Null</th>';
-            echo '<th>UNIQUE KEY</th>';
+            echo '<th>Index</th>';
             echo '<th>Input order</th>';
             echo '<th>Input type</th>';
             echo '<th>Deletable</th>';
+            echo '<td>Operations</td>';
             echo '</tr>';
             echo '</thead>';
             echo '<tbody>';
@@ -36,10 +37,13 @@
                     echo '<td>'.$field->table_field.'</td>';
                     echo '<td>'.$field->tf_type.'</td>';
                     echo '<td>'.(($field->tf_constraint == 0) ? 'No constraint' : $field->tf_constraint).'</td>';
-                    echo '<td>'.(($field->tf_unsigned== 1) ? 'UNSIGNED' : 'UNSIGNED').'</td>';
+                    echo '<td>'.$field->tf_attributes.'</td>';
                     echo '<td>'.$field->tf_default.'</td>';
                     echo '<td>'.$field->tf_null.'</td>';
-                    echo '<td>'.$field->tf_unique.'</td>';
+                    echo '<td>'.$field->tf_index.'</td>';
+                    echo '<td>'.$field->input_order.'</td>';
+                    echo '<td>'.$field->input_type.'</td>';
+                    echo '<td>'.$field->deletable.'</td>';
                     echo '<td>';
                     //echo anchor('admin/content-types/edit/'.$type->id,'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>');
                     //echo ' '.anchor('admin/content-types/table-definition/'.$type->id, '<span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>');
@@ -47,9 +51,6 @@
                     echo '</td>';
                     echo '</tr>';
                 }
-                echo '<pre>';
-                print_r($table_fields);
-                echo '</pre>';
             }
             echo '</tbody>';
             echo '</table>';

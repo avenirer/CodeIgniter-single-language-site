@@ -37,16 +37,16 @@ class User extends MY_Controller
         $this->form_validation->set_rules('identity', 'Identity', 'required');
         $this->form_validation->set_rules('password', 'Password', 'required');
         $this->form_validation->set_rules('remember','Remember me','integer');
-        $this->form_validation->set_rules('redirect_to','Redirect to','valid_url');
         if($this->form_validation->run()===TRUE)
         {
             $remember = (bool) $this->input->post('remember');
             if ($this->ion_auth->login($this->input->post('identity'), $this->input->post('password'), $remember))
             {
                 $user_id = $this->ion_auth->user()->row()->id;
-                $this->load->library('rat');
-                $this->rat->log('The user logged in',$user_id);
-                redirect('admin');
+                //$this->load->library('rat');
+                //$this->rat->log('The user logged in',$user_id);
+                if(isset($_SESSION['redirect_to'])) redirect($_SESSION['redirect_to']);
+                else redirect('admin');
             }
             else
             {

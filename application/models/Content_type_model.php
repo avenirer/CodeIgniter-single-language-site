@@ -13,6 +13,11 @@ class Content_type_model extends MY_Model
             'unsigned' => TRUE,
             'auto_increment' => TRUE
         ),
+        'published' => array(
+            'type' => 'TINYINT',
+            'unsigned' => 1,
+            'default' => 0
+        ),
         'created_by' => array(
             'type' => 'INT',
             'unsigned' => TRUE,
@@ -80,9 +85,11 @@ class Content_type_model extends MY_Model
                     'tf_constraint'=>'',
                     'tf_unsigned'=>'0',
                     'tf_default'=>'',
+                    'tf_attributes' => 'NONE',
                     'tf_null'=>'0',
                     'tf_auto_increment'=>'0',
-                    'tf_unique'=>'0'
+                    'tf_index'=>'NONE',
+
                 );
                 foreach($field_data as $def => $value)
                 {
@@ -107,7 +114,6 @@ class Content_type_model extends MY_Model
 
     public function get_fields_data($content_type)
     {
-        $table_name = $content_type->table_name;
         $this->db->where('content_type_id',$content_type->id);
         $input_definitions = $this->db->get('input_definitions')->result();
 
@@ -126,7 +132,7 @@ class Content_type_model extends MY_Model
             }
             else
             {
-                $definition->deletable==1;
+                $definition->deletable = 1;
             }
         }
         return $input_definitions;
