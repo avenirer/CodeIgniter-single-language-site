@@ -34,6 +34,9 @@
                     case 'text' :
                         echo form_input($definition->table_field, set_value($definition->table_field),'class="form-control"');
                         break;
+                    case 'wysiwyg':
+                        echo form_textarea($definition->table_field, set_value($definition->table_field, '', false), 'class="form-control editor"');
+                        break;
                 }
                 echo '</div>';
             }

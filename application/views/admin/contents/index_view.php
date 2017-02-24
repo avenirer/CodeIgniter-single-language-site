@@ -21,9 +21,10 @@
     <div class="row">
         <div class="col-lg-12" style="margin-top: 10px;">
             <?php
+            /*
             echo '<pre>';
             print_r($definitions);
-            echo '</pre>';
+            echo '</pre>';*/
             echo '<table class="table table-hover table-bordered table-condensed">';
             echo '<thead>';
             echo '<tr>';

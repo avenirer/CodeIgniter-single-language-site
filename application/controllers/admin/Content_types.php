@@ -41,7 +41,7 @@ class Content_types extends Admin_Controller
     public $input_types = array(
         'text'=>'text',
         'textarea'=>'textarea',
-        'wysiwyg'=>'textarea with WYSIWYG',
+        'wysiwyg'=>'wysiwyg',
         'select'=>'select',
         'checkbox'=>'checkbox',
         'radio'=>'radio'
