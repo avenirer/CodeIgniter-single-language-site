@@ -81,12 +81,32 @@ class Content_model extends MY_Model
             }
             return $parents;
         }
-        return array('No parents');
+        return false;
     }
 
-    public function get_rules()
+    public function insert_into_table($table_name, $insert)
     {
-        
+        $insert['created_by'] = $_SESSION['user_id'];
+        $insert['created_at'] = date('Y-m-d H:i:s');
+        if($this->db->insert($table_name,$insert))
+        {
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    public function get_content_from_table($content_type,$content_id)
+    {
+        $table_name = $content_type->table_name;
+        $this->db->where('id',$content_id);
+        $this->db->limit(1);
+        return $this->db->get($table_name)->row();
+    }
+
+    public function get_list_from_table($content_type)
+    {
+        $table_name = $content_type->table_name;
+        return $this->db->get($table_name)->result();
     }
 
 

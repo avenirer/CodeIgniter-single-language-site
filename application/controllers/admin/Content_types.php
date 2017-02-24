@@ -265,6 +265,7 @@ class Content_types extends Admin_Controller
             }
             else
             {
+                $field[$table_field]['null'] = FALSE;
                 $input_definition['tf_null'] = '0';
             }
 

@@ -27,9 +27,14 @@ class Contents extends Admin_Controller
             redirect('admin');
         }
         else {
-            $list_content = $this->content_model->where('content_type_id', $content_type_id)->get_all();
             $this->data['content_type'] = $content_type;
+
+            $list_content = $this->content_model->get_list_from_table($content_type);
             $this->data['contents'] = $list_content;
+
+            $this->load->model('input_definition_model');
+            $input_definitions = $this->input_definition_model->where(array('content_type_id'=>$content_type->id,'input_type != ' => ''))->order_by('input_order', 'ASC')->get_all();
+            $this->data['definitions'] = $input_definitions;
             $this->render('admin/contents/index_view');
         }
 	}
@@ -44,143 +49,79 @@ class Contents extends Admin_Controller
         }
 
         $this->data['parents'] = $this->content_model->get_parents_list($content_type->id);
+
         $this->data['content_type'] = $content_type;
-        $rules = $this->content_model->rules;
-        $this->form_validation->set_rules($rules['insert']);
 
         $this->load->model('input_definition_model');
-        $input_definitions = $this->input_definition_model->where(array('content_type_id'=>$content_type->id))->get_all();
+        $input_definitions = $this->input_definition_model->where(array('content_type_id'=>$content_type->id,'input_type != ' => ''))->order_by('input_order', 'ASC')->get_all();
 
-        echo '<pre>';
-        print_r($input_definitions);
-        echo '</pre>';
+        if($input_definitions == false)
+        {
+            $this->postal->add('You must first have table fields defined','error');
+            redirect('admin/content-types/table-definition/'.$content_type->id);
+        }
 
+        $rules = array();
+        foreach($input_definitions as $definition)
+        {
+            $rules[] = array(
+                'field' => $definition->table_field,
+                'label' => $definition->input_label,
+                'rules' => $definition->insert_rules
+            );
+        }
 
-        echo 'hello';
-        exit;
+        $this->form_validation->set_rules($rules);
         if($this->form_validation->run()===FALSE)
         {
+            $this->data['input_definitions'] = $input_definitions;
             $this->render('admin/contents/create_view');
         }
         else
         {
-            $content_type_id = $this->input->post('content_type_id');
-            $parent_id = $this->input->post('parent_id');
-            $title = $this->input->post('title');
-            $short_title = (strlen($this->input->post('short_title')) > 0) ? $this->input->post('short_title') : $title;
-            $slug = (strlen($this->input->post('slug')) > 0) ? url_title($this->input->post('slug'),'-',TRUE) : url_title(convert_accented_characters($title),'-',TRUE);
-            $order = (int) $this->input->post('order');
-            $content = $this->input->post('content');
-            $teaser = (strlen($this->input->post('teaser')) > 0) ? $this->input->post('teaser') : substr($content, 0, strpos($content, '<!--more-->'));
-            if($teaser == 0) $teaser = '';
-            $page_title = (strlen($this->input->post('page_title')) > 0) ? $this->input->post('page_title') : $title;
-            $page_description = (strlen($this->input->post('page_description')) > 0) ? $this->input->post('page_description') : ellipsize($teaser, 160);
-            $page_keywords = $this->input->post('page_keywords');
-            $published_at = $this->input->post('published_at');
+            echo '<pre>';
+            print_r($input_definitions);
+            echo '</pre>';
+            $insert_data = array();
 
-            $insert_data = array(
-                'content_type_id'=>$content_type_id,
-                'title' => $title,
-                'short_title' => $short_title,
-                'teaser' => $teaser,
-                'content' => $content,
-                'page_title' => $page_title,
-                'page_description' => $page_description,
-                'page_keywords' => $page_keywords,
-                'order' => $order,
-                'published_at'=>$published_at,
-                'parent_id' => $parent_id
-            );
-
-            if($content_id = $this->content_model->insert($insert_data))
+            foreach($input_definitions as $definition)
             {
-                $this->postal->add('A new '.$content_type.' was created', 'success');
-                $url = $this->_verify_slug($slug);
-                $this->slug_model->insert(
-                    array(
-                    'content_type'=> $content_type,
-                    'content_id'=>$content_id,
-                    'url'=>$url)
-                );
+                $insert_data[$definition->table_field] = $this->input->post($definition->table_field);
             }
 
-            echo '...';
-
-            //redirect('admin/contents/index/'.$content_type,'refresh');
-        }
-    }
-
-    public function edit($content_id)
-    {
-        $content = $this->content_model->get($content_id);
-        if($content === FALSE)
-        {
-            $this->postal->add('There is no content to edit.','error');
-            redirect('admin/contents/index', 'refresh');
-        }
-        $this->data['content'] = $content;
-        $this->data['parents'] = $this->content_model->get_parents_list($content->content_type,$content->id);
-        $this->data['slugs'] = $this->slug_model->where(array('content_type'=>$content->content_type,'content_id'=>$content->id))->get_all();
-        $rules = $this->content_model->rules;
-        $this->form_validation->set_rules($rules['update']);
-        if($this->form_validation->run()===FALSE)
-        {
-            $this->render('admin/contents/edit_view');
-        }
-        else
-        {
-            $content_id = $this->input->post('content_id');
-            $content = $this->content_model->get($content_id);
-            if($content!== FALSE)
+            if($this->content_model->insert_into_table($content_type->table_name,$insert_data))
             {
-                $parent_id = $this->input->post('parent_id');
-                $title = $this->input->post('title');
-                $short_title = $this->input->post('short_title');
-                $slug = url_title(convert_accented_characters($this->input->post('slug')),'-',TRUE);
-                $order = $this->input->post('order');
-                $text = $this->input->post('content');
-                $teaser = (strlen($this->input->post('teaser')) > 0) ? $this->input->post('teaser') : substr($text, 0, strpos($text, '<!--more-->'));
-                $page_title = (strlen($this->input->post('page_title')) > 0) ? $this->input->post('page_title') : $title;
-                $page_description = (strlen($this->input->post('page_description')) > 0) ? $this->input->post('page_description') : ellipsize($teaser, 160);
-                $page_keywords = $this->input->post('page_keywords');
-                $published_at = $this->input->post('published_at');
-
-                $update_data = array(
-                    'title' => $title,
-                    'short_title' => $short_title,
-                    'teaser' => $teaser,
-                    'content' => $text,
-                    'page_title' => $page_title,
-                    'page_description' => $page_description,
-                    'page_keywords' => $page_keywords,
-                    'parent_id' => $parent_id,
-                    'published_at' => $published_at,
-                    'order' => $order);
-
-                if ($this->content_model->update($update_data, $content_id))
-                {
-                    if(strlen($slug)>0)
-                    {
-                        $url = $this->_verify_slug($slug);
-                        $new_slug = array(
-                            'content_type' => $content->content_type,
-                            'content_id' => $content->id,
-                            'url' => $url);
-                        if($slug_id =  $this->slug_model->insert($new_slug))
-                        {
-                            $this->slug_model->where(array('content_type'=>$content->content_type, 'id !='=>$slug_id))->update(array('redirect'=>$slug_id,'updated_by'=>$this->user_id));
-                        }
-                    }
-                    $this->rat->log('The user edited the content type "'.$content->content_type.'" with the ID: '.$content->id.' having "'.$content->title.'" as title.');
-                    $this->postal->add('The content was updated successfully.','success');
-                }
+                $this->postal->add('New '.$content_type->name.' was added successfully','success');
             }
             else
             {
-                $this->postal->add('There is no content to update.','error');
+                $this->postal->add('There was a problem when inserting '.$content_type->name,'error');
             }
-            redirect('admin/contents/index/'.$content->content_type,'refresh');
+            redirect('admin/contents/index/'.$content_type->id);
         }
+    }
+
+    public function edit($content_type_id,$content_id)
+    {
+        $content_type = $this->content_type_model->get($content_type_id);
+        $content = $this->content_model->get_content_from_table($content_type,$content_id);
+        if($content_type == false || $content == false)
+        {
+            $this->postal->add('There is no content to edit.','error');
+            redirect('admin');
+        }
+
+
+
+        echo '<pre>';
+        print_r($content_type);
+        echo '</pre>';
+
+        echo '<pre>';
+        print_r($content);
+        echo '</pre>';
+        exit;
+
     }
     private function _verify_slug($str)
     {
